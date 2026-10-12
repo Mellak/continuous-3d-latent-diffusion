@@ -154,4 +154,4 @@ pytest tests/        # test_equivalence.py runs only when the original research 
 
 Code: [Apache-2.0](LICENSE). Weights: [CC BY-NC-SA 4.0](MODEL_LICENSE.md), for research use only and not for clinical use. Please also credit the AutoPET (TCIA) and IXI datasets.
 
-Funding: CPER 2021–2027 IMAGIIS (INNOV-XS). HPC resources: IDRIS, allocation 2026-AD011018234.
+Funding: CPER 2021–2027 IMAGIIS (INNOV-XS).
