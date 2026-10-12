@@ -38,7 +38,7 @@ Python ≥ 3.10, PyTorch ≥ 2.3 (tested with 2.5). A GPU with BF16 support is r
 
 ## Quick start
 
-The autoencoder weights are in `weights/`. Prior weights (331 MB each) are downloaded on first use from the GitHub release, or from Hugging Face.
+Download the pretrained weights from [Google Drive](https://drive.google.com/file/d/1DDR66MXWVQo1_cxXBF0chNI2JK_ph-vL/view?usp=sharing) before running inference. The weights are distributed separately from this repository. Place each model's files in `weights/<id>/` as described below.
 
 ```bash
 # Generate (JiT prior, 50 Heun steps) -> NIfTI in HU + PNG preview
@@ -64,9 +64,22 @@ x_hat = ae.decode_latent(z, (512, 512, 512), **render_kwargs(cfg))  # any output
 
 ## Released models
 
-All weights live in `weights/<id>/` (`model.safetensors`, `config.yaml`, model card; priors also `latent_stats.json`):
-- autoencoders (6–19 MB): committed in this repository;
-- priors (331 MB, above GitHub's 100 MB file limit): attached to the [GitHub release v1.0](https://github.com/Mellak/continuous-3d-latent-diffusion/releases/tag/v1.0) as `<id>.safetensors`. They are downloaded into `weights/<id>/` the first time they are used. They are also on Hugging Face: [Mellak/continuous-3d-latent-diffusion](https://huggingface.co/Mellak/continuous-3d-latent-diffusion).
+Pretrained weights are available from [Google Drive](https://drive.google.com/file/d/1DDR66MXWVQo1_cxXBF0chNI2JK_ph-vL/view?usp=sharing). Download them manually; the inference commands do not download from Google Drive automatically.
+
+The model loader expects a folder for each model at `weights/<id>/`, containing `model.safetensors` and `config.yaml`. Prior folders also require `latent_stats.json`. Keep any supplied model cards with their models. For example:
+
+```text
+weights/
+  core-ae-liif-ct512/
+    model.safetensors
+    config.yaml
+  core-ldm-jit-ct512-liif/
+    model.safetensors
+    config.yaml
+    latent_stats.json
+```
+
+If you keep the model folders elsewhere, set `C3D_WEIGHTS` to their parent directory before running the commands. Autoencoder weights are 6–19 MB each; prior weights are about 331 MB each and exceed GitHub's 100 MB file limit.
 
 | Id | Model | Data | Paper |
 |---|---|---|---|
@@ -119,7 +132,7 @@ c3d/            package: models (CoRe-AE, heads, 3-D U-Net), diffusion (JiT, DDP
 configs/        ae/*.yaml, prior/*.yaml
 inference/      autoencoder.py / .ipynb, generate.py / .ipynb, common.py
 scripts/        export_release_weights.py, record_lab_animations.py
-weights/        released models (priors: model.safetensors downloaded from the GitHub release)
+weights/        pretrained models downloaded separately from Google Drive
 docs/           lab/ (interactive pages), media/ (animations), data.md
 tests/          heads, end-to-end pipeline, equivalence with the original research code
 ```
