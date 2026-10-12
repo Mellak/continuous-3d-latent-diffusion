@@ -1,0 +1,70 @@
+# JiT prior on CoRe-AE (CLIF) latents, MRI 256^3 (IXI T1): copied from the saved config of core-ldm-jit-mri256-clif.
+# Set the latent folder with `c3d train-prior --latents /path/from/export-latents`.
+# training.required_gpus: null accepts any number of ranks (the released priors were trained on 2 GPUs).
+experiment:
+  name: mri_clif_jit
+  modality: mri
+  head: clif
+data:
+  latent_root: null
+model:
+  architecture: unet_flash_3d
+  dims: 3
+  resample_3d: true
+  in_channels: 4
+  out_channels: 4
+  model_channels: 64
+  channel_mult:
+  - 1
+  - 2
+  - 2
+  - 4
+  - 4
+  - 4
+  num_res_blocks: 2
+  attention_resolutions:
+  - 16
+  - 32
+  num_heads: 4
+  num_head_channels: -1
+  num_heads_upsample: -1
+  use_scale_shift_norm: true
+  conv_resample: true
+  resblock_updown: false
+  dropout: 0.0
+  use_checkpoint: false
+  use_fp16: false
+  decoder_skip: add
+  skip_scale: 0.5
+objective:
+  name: jit_x0v
+  p_mean: -1.2
+  p_std: 1.2
+  noise_scale: 1.0
+  t_eps: 0.05
+  time_embedding_scale: 1.0
+  variance_floor: 1.0e-12
+training:
+  precision: bf16
+  seed: 0
+  batch_per_gpu: 1
+  max_steps: 1000000
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  grad_clip: 1.0
+  ema_decay: 0.9999
+  workers_per_rank: 2
+  log_every: 100
+  checkpoint_every: 1000
+  sample_every: 5000
+  sample_steps: 50
+  sampling_method: heun
+  sample_seed: 91415
+  required_gpus: null
+  preview_reserve_seconds: 600
+validation:
+  fraction: 0.1
+  seed: 91415
+  every_steps: 5000
+  max_volumes: 4
+  noise_draws: 2

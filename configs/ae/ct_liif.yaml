@@ -1,0 +1,109 @@
+# CoRe-AE (LIIF) for CT 512^3 (AutoPET, 1 x 1 x 1.5 mm): copied from the saved config of the released weights core-ae-liif-ct512.
+# Set the data folder with `c3d train-ae --data /path/to/volumes`.
+# The released weights were fine-tuned from an earlier LIIF backbone (not released);
+# `--mode scratch` trains from new weights, `--mode finetune --init core-ae-liif-ct512` continues from the release.
+experiment:
+  name: ct_liif
+  modality: ct
+  native_shape: &id001
+  - 512
+  - 512
+  - 512
+data:
+  root: null
+  patterns: null
+  file_list: null
+  target_spacing: null
+  augment_flip: true
+  ct_min_hu: -1000.0
+  ct_max_hu: 1500.0
+  ct_pad_hu: -1000.0
+  mri_percentile_low: 1.0
+  mri_percentile_high: 99.0
+  mri_foreground_threshold: 0.0
+model:
+  encoder:
+    in_channels: 1
+    base_channels: 8
+    latent_channels: 4
+    norm: gn
+    gn_groups: 8
+  feature_decoder:
+    stage_channels:
+    - 48
+    - 48
+    stage_blocks:
+    - 2
+    - 2
+    stage_strides:
+    - 1
+    - 1
+    out_channels: -1
+    block: basic
+    norm: gn
+    gn_groups: 8
+    act: silu
+    dropout: 0.0
+    drop_path_rate: 0.0
+    in_proj: true
+    out_proj: false
+    residual_scale: 1.0
+  head:
+    name: liif
+    config:
+      out_channels: 1
+      local_ensemble: true
+      feat_unfold: false
+      use_cell: true
+      padding_mode: border
+      mlp_hidden:
+      - 128
+      - 128
+      - 128
+      mlp_act: relu
+      mlp_dropout: 0.0
+      render_chunk: 300000
+initialization:
+  checkpoint: ''
+training:
+  mode: scratch
+  batch_size: 1
+  epochs: 2000
+  lr: 0.0002
+  weight_decay: 0.0
+  adam_betas:
+  - 0.9
+  - 0.999
+  grad_clip: 1.0
+  num_workers: 4
+  seed: 0
+  amp: true
+  amp_dtype: bf16
+  coords_per_batch: 200000
+  coord_jitter: 0.0
+  train_resolutions:
+  - *id001
+  preview_every_epochs: 1
+  keep_checkpoint_every: 50
+  losses:
+    l1_weight: 1.0
+    kl_weight: 0.0001
+    cov_weight: 1.0
+    cov_eps: 0.001
+    cov_value_clip: 10.0
+    ssim_weight: 0.0
+    perceptual_weight: 0.0
+    gan_weight: 0.0
+  checkpoint_every_steps: 100
+  batch_policy: per_gpu
+validation:
+  fraction: 0.1
+  seed: 91415
+  max_volumes: 2
+  patch_size:
+  - 32
+  - 32
+  - 32
+  patches_per_volume: 4
+  preview_every_epochs: 1
+  preview_reserve_seconds: 600

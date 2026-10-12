@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "c3d"
+version = "1.0.0"
+description = "CoRe-AE: continuous 3-D autoencoder and latent diffusion priors for CT and MRI volumes"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [{name = "Youness Mellak"}, {name = "Antoine De Paepe"}, {name = "Dimitris Visvikis"}, {name = "Alexandre Bousse"}]
+dependencies = [
+  "torch>=2.3",
+  "numpy",
+  "pyyaml",
+  "nibabel",
+  "matplotlib",
+  "safetensors",
+  "huggingface_hub",
+]
+
+[project.optional-dependencies]
+train = ["monai", "monai-generative", "pytest"]
+notebooks = ["jupyter"]
+
+[project.scripts]
+c3d = "c3d.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["c3d*", "inference*"]

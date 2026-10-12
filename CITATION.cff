@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or the released weights, please cite the paper."
+title: "Continuous 3-D Latent Diffusion: CoRe-AE"
+repository-code: "https://github.com/Mellak/continuous-3d-latent-diffusion"
+license: Apache-2.0
+authors:
+  - family-names: Mellak
+    given-names: Youness
+  - family-names: De Paepe
+    given-names: Antoine
+  - family-names: Visvikis
+    given-names: Dimitris
+  - family-names: Bousse
+    given-names: Alexandre
+preferred-citation:
+  type: article
+  title: "Continuous 3-D Latent Diffusion for Medical Image Generation and Reconstruction"
+  authors:
+    - family-names: Mellak
+      given-names: Youness
+    - family-names: De Paepe
+      given-names: Antoine
+    - family-names: Visvikis
+      given-names: Dimitris
+    - family-names: Bousse
+      given-names: Alexandre
+  year: 2026
+  notes: "Preprint"

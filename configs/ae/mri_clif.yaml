@@ -1,0 +1,135 @@
+# CoRe-AE (CLIF) for MRI 256^3 (IXI T1): copied from the saved config of the released weights core-ae-clif-mri256.
+# Set the data folder with `c3d train-ae --data /path/to/volumes`.
+# The released weights were fine-tuned from an earlier LIIF backbone (not released);
+# `--mode scratch` trains from new weights, `--mode finetune --init core-ae-clif-mri256` continues from the release.
+experiment:
+  name: mri_clif
+  modality: mri
+  native_shape:
+  - 256
+  - 256
+  - 256
+data:
+  root: null
+  patterns: null
+  file_list: null
+  target_spacing: null
+  augment_flip: true
+  ct_min_hu: -1000.0
+  ct_max_hu: 1500.0
+  ct_pad_hu: -1000.0
+  mri_percentile_low: 1.0
+  mri_percentile_high: 99.0
+  mri_foreground_threshold: 0.0
+model:
+  encoder:
+    in_channels: 1
+    base_channels: 16
+    latent_channels: 4
+    norm: gn
+    gn_groups: 8
+  feature_decoder:
+    stage_channels:
+    - 48
+    - 48
+    stage_blocks:
+    - 2
+    - 2
+    stage_strides:
+    - 1
+    - 1
+    out_channels: -1
+    block: basic
+    norm: gn
+    gn_groups: 8
+    act: silu
+    dropout: 0.0
+    drop_path_rate: 0.0
+    in_proj: true
+    out_proj: false
+    residual_scale: 1.0
+  head:
+    name: clif
+    config:
+      out_channels: 1
+      hidden_channels: 64
+      residual_blocks: 2
+      kernel_size: 3
+      norm: channel
+      gn_groups: 8
+      act: silu
+      dropout: 0.0
+      use_cell: true
+      align_corners: false
+      padding_mode: border
+      convolution_padding_mode: replicate
+      training_patch:
+      - 64
+      - 64
+      - 64
+      render_tile:
+      - 32
+      - 64
+      - 64
+      halo: 6
+      scale_min: 1.0
+      scale_max: 1.0
+initialization:
+  checkpoint: ''
+training:
+  mode: scratch
+  batch_size: 1
+  epochs: 2000
+  lr: 3.6e-05
+  discriminator_lr: 3.6e-05
+  adam_betas:
+  - 0.5
+  - 0.9
+  weight_decay: 0.0
+  grad_clip: 1.0
+  discriminator_grad_clip: 1.0
+  num_workers: 4
+  seed: 0
+  amp: true
+  amp_dtype: bf16
+  preview_every_epochs: 1
+  keep_checkpoint_every: 0
+  losses:
+    l1_weight: 1.0
+    ssim_weight: 0.0
+    perceptual_weight: 1.0
+    gan_weight: 0.75
+    gan_start_step: 0
+    adaptive_gan_weight: true
+    adaptive_gan_eps: 0.0001
+    adaptive_gan_max: 10000.0
+    kl_weight: 0.0001
+    cov_weight: 0.0
+    cov_eps: 0.001
+    cov_value_clip: 10.0
+  checkpoint_every_steps: 100
+  batch_policy: per_gpu
+  activation_checkpointing: true
+  training_query_chunk: 16384
+  checkpoint_perceptual: true
+  log_every_steps: 100
+perceptual:
+  network_type: squeeze
+  fake_3d_ratio: 0.5
+  cache_dir: null
+  pretrained: true
+discriminator:
+  base_channels: 32
+  layers: 4
+  max_channels: 256
+validation:
+  fraction: 0.1
+  seed: 91415
+  max_volumes: 2
+  patch_size:
+  - 32
+  - 32
+  - 32
+  patches_per_volume: 4
+  preview_every_epochs: 1
+  preview_reserve_seconds: 600

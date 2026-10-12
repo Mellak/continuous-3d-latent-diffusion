@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.ipynb_checkpoints/
+outputs/
+runs/
+latents/
+*.nii
+*.nii.gz
+*.pt
+
+# Prior weights (331 MB each) exceed GitHub's 100 MB file limit: attach them to a GitHub Release
+weights/core-ldm-*/model.safetensors

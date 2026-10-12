@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIIF and CLIF heads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,600;1,400;1,500&display=swap">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --ink:#1b2130; --muted:#5b6475; --line:#d9dee6; --chip:#e4e8ee;
+  --pink:#c42a67; --blue:#1d5fa6; --focus:#1d5fa6;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-math:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#11151b; --surface:#1a1f27; --ink:#e6e9ee; --muted:#9aa3b1; --line:#2c333d; --chip:#252c36;
+    --pink:#f07aa5; --blue:#86bdf0; --focus:#86bdf0; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --bg:#11151b; --surface:#1a1f27; --ink:#e6e9ee; --muted:#9aa3b1; --line:#2c333d; --chip:#252c36;
+  --pink:#f07aa5; --blue:#86bdf0; --focus:#86bdf0; color-scheme:dark; }
+html,body{margin:0;background:var(--bg);color:var(--ink);}
+body{font-family:var(--f-body);font-size:14px;line-height:1.5;}
+.wrap{box-sizing:border-box;max-width:1200px;margin:0 auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px;}
+h1{font-family:var(--f-display);font-weight:600;font-size:24px;margin:0;}
+.sub{margin:2px 0 0;color:var(--muted);max-width:85ch;font-size:13.5px;}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+.ctl{display:flex;flex-direction:column;gap:4px;}
+.ctl > span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--chip);border-radius:8px;padding:2px;gap:2px;}
+.seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);padding:5px 11px;border-radius:6px;cursor:pointer;white-space:nowrap;}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.18);font-weight:600;}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start;}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr);}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.card h2,.card h3{margin:0;font-family:var(--f-display);font-weight:600;}
+.card h2{font-size:16px;} .card h3{font-size:15px;}
+.views{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:12px;align-items:start;}
+@media (max-width:600px){.views{grid-template-columns:minmax(0,1fr);}}
+canvas{display:block;width:100%;height:auto;border-radius:6px;background:#000;touch-action:none;}
+#view{cursor:crosshair;} #overview{cursor:pointer;}
+.note{font-size:12.5px;color:var(--muted);margin:0;line-height:1.5;}
+.eq{font-family:var(--f-math);font-size:15px;margin:2px 0;}
+.eq i{font-style:italic;}
+table{border-collapse:collapse;font-size:12.5px;width:100%;}
+th,td{white-space:nowrap;padding:3px 5px;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:12px;}
+th{font-family:var(--f-body);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;}
+td:first-child,th:first-child{text-align:left;}
+.bar{height:8px;border-radius:4px;background:var(--blue);}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px;margin:0;}
+.kv dt{color:var(--muted);} .kv dd{margin:0;font-family:var(--f-mono);text-align:right;}
+a{color:var(--blue);}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>How the CoRe-AE head renders one voxel (2-D view)</h1>
+    <p class="sub">An axial CT slice with the latent grid on top (one latent cell = 4 × 4 voxels, r = 4). Drag the query point <b>c</b>. The feature grid <b>u</b> lives on the cells; the head turns <b>u</b> into intensities at any coordinate. In 3-D, LIIF reads 8 neighbouring cells instead of the 4 shown here.</p>
+  </header>
+
+  <section class="controls" aria-label="Settings">
+    <div class="ctl"><span id="l-head">Head</span><div class="seg" id="c-head" role="group" aria-labelledby="l-head">
+      <button data-v="liif">LIIF · MLP</button><button data-v="clif">CLIF · CNN</button></div></div>
+    <div class="ctl"><span id="l-scale">Output grid</span><div class="seg" id="c-scale" role="group" aria-labelledby="l-scale">
+      <button data-v="1">×1 (512²)</button><button data-v="2">×2</button><button data-v="4">×4</button></div></div>
+    <div class="ctl"><span id="l-snap">Query</span><div class="seg" id="c-snap" role="group" aria-labelledby="l-snap">
+      <button data-v="free">free</button><button data-v="grid">on output grid</button></div></div>
+  </section>
+
+  <div class="main">
+    <section class="card" aria-labelledby="view-title">
+      <h2 id="view-title">LIIF</h2>
+      <div class="views">
+        <canvas id="view" width="1024" height="1024" role="img" aria-label="Zoomed CT region with latent cells and the query point"></canvas>
+        <div>
+          <canvas id="overview" width="340" height="340" role="img" aria-label="Whole slice; the box is the zoomed region. Click to move it."></canvas>
+          <p class="note" style="margin-top:6px">Whole slice. Click to move the zoomed region.</p>
+        </div>
+      </div>
+      <p class="note" id="cap"></p>
+    </section>
+
+    <aside style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="card" id="panel"></div>
+      <div class="card">
+        <h3>Settings of the released models</h3>
+        <dl class="kv">
+          <dt>latent z / features u</dt><dd>4 / 48 channels</dd>
+          <dt>downsampling r</dt><dd>4 per axis</dd>
+          <dt>LIIF MLP</dt><dd>3 × 128, ReLU</dd>
+          <dt>LIIF render chunk</dt><dd>300 000 queries</dd>
+          <dt>CLIF CNN</dt><dd>6 conv 3³, 64 ch</dd>
+          <dt>CLIF tile + halo</dt><dd>32×64×64 + 6</dd>
+        </dl>
+        <p class="note">Chunks and tiles only bound memory: the rendered volume does not depend on them.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>const AXIAL = "data:image/jpeg;base64,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";</script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const N = 512, R = 4;                       // volume size, voxels per latent cell
+const RF = 6, HALO = 6, TILE = 64;          // CLIF: 6 convs 3^3 -> radius 6; in-plane tile 64 x 64
+const ZOOM = { liif: 24, clif: 112 };       // zoomed window size in voxels
+const st = { head: 'liif', scale: 1, snap: 'free', cx: 250, cy: 300, q: { x: 249.1, y: 299.3 } };
+const NEIGH = ['#c42a67', '#1d5fa6', '#d98b16', '#2a8a5a'];   // fixed colours for the 4 neighbours
+
+const img = new Image();
+img.onload = draw;
+img.src = AXIAL;
+const view = $('view'), vg = view.getContext('2d'), ov = $('overview'), og = ov.getContext('2d');
+
+const win = () => { const z = ZOOM[st.head]; return { x0: st.cx - z / 2, y0: st.cy - z / 2, z }; };
+const px = (v, w) => (v - w) * view.width / win().z;            // voxel -> canvas pixel along one axis
+const toVox = (e, el) => { const r = el.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/* LIIF local ensemble in 2-D, following c3d/models/heads/liif_3d.py:
+   shift the query by +-half a cell, take the nearest cell centre, weight each prediction by the
+   area of the OPPOSITE rectangle, normalised to sum 1. */
+function liifNeighbours(q) {
+  const out = [];
+  for (const sy of [-1, 1]) for (const sx of [-1, 1]) {
+    const qx = clamp(q.x + sx * R / 2 + 1e-6, 0, N - 1e-6), qy = clamp(q.y + sy * R / 2 + 1e-6, 0, N - 1e-6);
+    const j = { i: Math.floor(qx / R), k: Math.floor(qy / R) };
+    const c = { x: j.i * R + R / 2, y: j.k * R + R / 2 };
+    const d = { x: (q.x - c.x) / R, y: (q.y - c.y) / R };           // offset in cell units
+    out.push({ sx, sy, j, c, d, area: Math.abs(d.x * d.y) + 1e-9 });
+  }
+  const total = out.reduce((a, n) => a + n.area, 0);
+  out.forEach(n => { const opp = out.find(m => m.sx === -n.sx && m.sy === -n.sy); n.w = opp.area / total; });
+  return out;
+}
+
+function snapQuery() {
+  if (st.snap !== 'grid') return;
+  const s = 1 / st.scale;                                       // output voxel size, in input voxels
+  st.q.x = (Math.floor(st.q.x / s) + 0.5) * s; st.q.y = (Math.floor(st.q.y / s) + 0.5) * s;
+}
+
+function drawImage(g, w, size) {
+  g.imageSmoothingEnabled = true; g.fillStyle = '#000'; g.fillRect(0, 0, size, size);
+  if (!img.complete || !img.naturalWidth) return;
+  const k = img.naturalWidth / N;
+  g.drawImage(img, w.x0 * k, w.y0 * k, w.z * k, w.z * k, 0, 0, size, size);
+}
+
+function grid(step, color, width) {
+  const w = win(), S = view.width;
+  vg.strokeStyle = color; vg.lineWidth = width; vg.beginPath();
+  for (let v = Math.ceil(w.x0 / step) * step; v <= w.x0 + w.z; v += step) { const p = px(v, w.x0); vg.moveTo(p, 0); vg.lineTo(p, S); }
+  for (let v = Math.ceil(w.y0 / step) * step; v <= w.y0 + w.z; v += step) { const p = px(v, w.y0); vg.moveTo(0, p); vg.lineTo(S, p); }
+  vg.stroke();
+}
+
+function dot(x, y, r, fill, stroke) {
+  vg.beginPath(); vg.arc(x, y, r, 0, 2 * Math.PI); vg.fillStyle = fill; vg.fill();
+  if (stroke) { vg.lineWidth = 2; vg.strokeStyle = stroke; vg.stroke(); }
+}
+
+function label(text, x, y, color, size = 22) {
+  vg.font = `600 ${size}px "IBM Plex Sans",Helvetica,Arial,sans-serif`; vg.textBaseline = 'middle';
+  vg.lineWidth = 5; vg.strokeStyle = 'rgba(0,0,0,.75)'; vg.strokeText(text, x, y); vg.fillStyle = color; vg.fillText(text, x, y);
+}
+
+function cellCentres() {
+  const w = win();
+  for (let i = Math.floor(w.x0 / R); i * R <= w.x0 + w.z; i++) for (let k = Math.floor(w.y0 / R); k * R <= w.y0 + w.z; k++)
+    dot(px(i * R + R / 2, w.x0), px(k * R + R / 2, w.y0), st.head === 'liif' ? 4 : 1.6, 'rgba(134,189,240,.9)');
+}
+
+function drawLIIF() {
+  const w = win(), q = st.q, nb = liifNeighbours(q), Q = { x: px(q.x, w.x0), y: px(q.y, w.y0) };
+  if (st.scale > 1) grid(1 / st.scale, 'rgba(255,255,255,.10)', 1);
+  grid(1, 'rgba(255,255,255,.22)', 1);
+  grid(R, 'rgba(134,189,240,.85)', 2.5);
+  cellCentres();
+  nb.forEach(n => {                                             // rectangle between query and the OPPOSITE centre
+    const opp = nb.find(m => m.sx === -n.sx && m.sy === -n.sy), C = { x: px(opp.c.x, w.x0), y: px(opp.c.y, w.y0) };
+    vg.fillStyle = NEIGH[nb.indexOf(n)] + '55';
+    vg.fillRect(Math.min(Q.x, C.x), Math.min(Q.y, C.y), Math.abs(Q.x - C.x), Math.abs(Q.y - C.y));
+  });
+  nb.forEach((n, i) => {
+    const C = { x: px(n.c.x, w.x0), y: px(n.c.y, w.y0) };
+    vg.setLineDash([10, 7]); vg.lineWidth = 3; vg.strokeStyle = NEIGH[i]; vg.beginPath(); vg.moveTo(Q.x, Q.y); vg.lineTo(C.x, C.y); vg.stroke(); vg.setLineDash([]);
+    dot(C.x, C.y, 11, NEIGH[i], '#fff');
+    label(`u${'₁₂₃₄'[i]}`, C.x + 14, C.y - 16, '#fff');
+  });
+  dot(Q.x, Q.y, 9, '#fff', '#000');
+  label('c', Q.x + 14, Q.y + 18, '#fff', 26);
+}
+
+function drawCLIF() {
+  const w = win(), q = st.q, S = view.width;
+  const Q = { x: px(q.x, w.x0), y: px(q.y, w.y0) };
+  const ti = Math.floor(q.x / TILE), tk = Math.floor(q.y / TILE);
+  grid(R, 'rgba(134,189,240,.35)', 1);
+  cellCentres();
+  grid(TILE, 'rgba(255,255,255,.45)', 2);
+  const T = { x: px(ti * TILE, w.x0), y: px(tk * TILE, w.y0), s: TILE * S / w.z };
+  const h = HALO * S / w.z;
+  vg.setLineDash([12, 8]); vg.lineWidth = 3; vg.strokeStyle = '#86bdf0'; vg.strokeRect(T.x - h, T.y - h, T.s + 2 * h, T.s + 2 * h); vg.setLineDash([]);
+  vg.lineWidth = 4; vg.strokeStyle = '#1d5fa6'; vg.strokeRect(T.x, T.y, T.s, T.s);
+  vg.fillStyle = 'rgba(29,95,166,.16)'; vg.fillRect(T.x, T.y, T.s, T.s);
+  label('tile 𝒯', T.x + 12, T.y + 24, '#cfe5fb');
+  label('tile + halo 𝒯⁺', T.x - h + 8, T.y - h - 16, '#86bdf0', 20);
+  const r = (RF + 0.5) * S / w.z;                               // receptive field: 13 x 13 voxels around c
+  vg.fillStyle = 'rgba(196,42,103,.22)'; vg.fillRect(Q.x - r, Q.y - r, 2 * r, 2 * r);
+  vg.lineWidth = 3; vg.strokeStyle = '#f07aa5'; vg.strokeRect(Q.x - r, Q.y - r, 2 * r, 2 * r);
+  const j = { i: Math.floor(q.x / R), k: Math.floor(q.y / R) }, C = { x: px(j.i * R + R / 2, w.x0), y: px(j.k * R + R / 2, w.y0) };
+  const cs = R * S / w.z;
+  vg.lineWidth = 3; vg.strokeStyle = '#fff'; vg.strokeRect(C.x - cs / 2, C.y - cs / 2, cs, cs);
+  dot(Q.x, Q.y, 7, '#fff', '#000');
+  label('c', Q.x + 12, Q.y + 16, '#fff', 24);
+  label('receptive field 13 × 13', Q.x - r, Q.y + r + 18, '#f07aa5', 18);
+}
+
+function drawOverview() {
+  const S = ov.width, w = win();
+  drawImage(og, { x0: 0, y0: 0, z: N }, S);
+  og.lineWidth = 3; og.strokeStyle = st.head === 'liif' ? '#f07aa5' : '#86bdf0';
+  og.strokeRect(w.x0 * S / N, w.y0 * S / N, w.z * S / N, w.z * S / N);
+}
+
+function panel() {
+  const q = st.q, v = 1 / st.scale;
+  if (st.head === 'liif') {
+    const nb = liifNeighbours(q);
+    const rows = nb.map((n, i) => `<tr><td><span class="sw" style="background:${NEIGH[i]}"></span>u${'₁₂₃₄'[i]}</td><td>${n.d.x.toFixed(2)}</td><td>${n.d.y.toFixed(2)}</td><td>${n.area.toFixed(3)}</td><td>${n.w.toFixed(3)}</td><td style="width:56px"><div class="bar" style="width:${(n.w * 100).toFixed(0)}%;background:${NEIGH[i]}"></div></td></tr>`).join('');
+    $('panel').innerHTML = `<h3>LIIF: local ensemble (Eq. 10)</h3>
+      <p class="eq">x̂(<i>c</i>) = Σ<sub><i>j</i></sub> <i>w</i><sub><i>j</i></sub> · MLP(<b>u</b><sub><i>j</i></sub>, Δ<i>c</i><sub><i>j</i></sub>, <i>v</i>)</p>
+      <table><thead><tr><th>cell</th><th>Δx</th><th>Δy</th><th>area</th><th>w</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+      <p class="note">Δx, Δy: offset from the cell centre, in cells. Each neighbouring cell predicts an intensity from its feature vector, the offset Δc and the query-cell size v = ${v.toFixed(2)} voxel (${(v / R).toFixed(3)} cell). The weight of a prediction is the area of the rectangle on the <b>opposite</b> side of the query, so the closest cell counts most. Every voxel is predicted independently; 2¹⁸ queries form one chunk.</p>`;
+    $('cap').innerHTML = `Query c = (${q.x.toFixed(2)}, ${q.y.toFixed(2)}) voxels. Blue lines: latent cells (4 × 4 voxels). Thin lines: voxels${st.scale > 1 ? ` and the ×${st.scale} output grid` : ''}. Shaded rectangles: area weights.`;
+  } else {
+    const j = { i: Math.floor(q.x / R), k: Math.floor(q.y / R) };
+    const d = { x: (q.x - (j.i * R + R / 2)) / R, y: (q.y - (j.k * R + R / 2)) / R };
+    $('panel').innerHTML = `<h3>CLIF: local convolution (Eq. 11)</h3>
+      <p class="eq">x̂(<i>c</i><sub><i>i</i></sub>) = [ CNN( {<b>g</b><sub><i>k</i></sub>}<sub><i>k</i>∈𝒯⁺</sub> ) ]<sub><i>i</i></sub>,&nbsp; <b>g</b><sub><i>k</i></sub> = (<b>u</b><sub><i>j</i>*(<i>k</i>)</sub>, Δ<i>c</i>, <i>v</i>)</p>
+      <dl class="kv">
+        <dt>nearest cell j*(c)</dt><dd>(${j.i}, ${j.k})</dd>
+        <dt>Δc (cells)</dt><dd>(${d.x.toFixed(2)}, ${d.y.toFixed(2)})</dd>
+        <dt>tile</dt><dd>(${Math.floor(q.x / TILE)}, ${Math.floor(q.y / TILE)}) · ${TILE}² in-plane</dd>
+        <dt>receptive field</dt><dd>13 × 13 × 13 voxels</dd>
+        <dt>halo</dt><dd>6 voxels</dd>
+      </dl>
+      <p class="note">Every output voxel first gets the feature of its nearest cell, its offset and the cell size. A small CNN (6 convolutions of 3³) then predicts the whole tile jointly, so neighbouring voxels share context. Each output depends only on its 13³ neighbourhood (radius 6), and the tile is computed with a 6-voxel halo that is cropped, so tiles join without seams and give exactly the full-grid result. Nothing is blended.</p>`;
+    $('cap').innerHTML = `Query c = (${q.x.toFixed(1)}, ${q.y.toFixed(1)}) voxels. White square: nearest latent cell. Dark blue: output tile; dashed: tile + halo; pink: receptive field of c.`;
+  }
+}
+
+function draw() {
+  const w = win();
+  drawImage(vg, w, view.width);
+  if (st.head === 'liif') drawLIIF(); else drawCLIF();
+  drawOverview(); panel();
+  $('view-title').textContent = st.head === 'liif' ? 'LIIF head · 24 × 24 voxel window' : 'CLIF head · 112 × 112 voxel window';
+}
+
+function sync() {
+  document.querySelectorAll('.seg').forEach(sg => { const k = sg.id.slice(2);
+    sg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(String(st[k]) === b.dataset.v))); });
+}
+
+document.querySelectorAll('.seg').forEach(sg => sg.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; const k = sg.id.slice(2);
+  st[k] = k === 'scale' ? +b.dataset.v : b.dataset.v;
+  centre(); snapQuery(); sync(); draw();
+}));
+
+function centre() {
+  const z = ZOOM[st.head] / 2;
+  if (st.head === 'clif') { st.cx = Math.floor(st.q.x / TILE) * TILE + TILE / 2; st.cy = Math.floor(st.q.y / TILE) * TILE + TILE / 2; }
+  else { st.cx = st.q.x; st.cy = st.q.y; }
+  st.cx = clamp(st.cx, z, N - z); st.cy = clamp(st.cy, z, N - z);
+}
+
+let dragging = false;
+function moveQuery(e) {
+  const [fx, fy] = toVox(e, view), w = win();
+  st.q.x = clamp(w.x0 + fx * w.z, w.x0 + 0.01, w.x0 + w.z - 0.01); st.q.y = clamp(w.y0 + fy * w.z, w.y0 + 0.01, w.y0 + w.z - 0.01);
+  snapQuery(); draw();
+}
+view.addEventListener('pointerdown', e => { dragging = true; view.setPointerCapture(e.pointerId); moveQuery(e); });
+view.addEventListener('pointermove', e => { if (dragging) moveQuery(e); });
+view.addEventListener('pointerup', () => { dragging = false; });
+ov.addEventListener('click', e => {
+  const [fx, fy] = toVox(e, ov);
+  st.q.x = clamp(fx * N, 1, N - 1); st.q.y = clamp(fy * N, 1, N - 1); centre(); snapQuery(); draw();
+});
+addEventListener('keydown', e => {
+  const step = { ArrowLeft: [-0.25, 0], ArrowRight: [0.25, 0], ArrowUp: [0, -0.25], ArrowDown: [0, 0.25] }[e.key];
+  if (!step) return;
+  const w = win(); st.q.x = clamp(st.q.x + step[0], w.x0, w.x0 + w.z); st.q.y = clamp(st.q.y + step[1], w.y0, w.y0 + w.z);
+  snapQuery(); draw(); e.preventDefault();
+});
+centre(); sync(); draw();
+})();
+</script>
+</body>
+</html>

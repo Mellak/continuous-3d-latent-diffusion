@@ -1,0 +1,67 @@
+# DDPM-epsilon prior on CoRe-AE (LIIF) latents, CT 512^3 (AutoPET, 1 x 1 x 1.5 mm): copied from the saved config of core-ldm-ddpm-ct512-liif.
+# Set the latent folder with `c3d train-prior --latents /path/from/export-latents`.
+# training.required_gpus: null accepts any number of ranks (the released priors were trained on 2 GPUs).
+data:
+  latent_root: null
+model:
+  architecture: unet_flash_3d
+  dims: 3
+  resample_3d: true
+  in_channels: 4
+  out_channels: 4
+  model_channels: 64
+  channel_mult:
+  - 1
+  - 2
+  - 2
+  - 4
+  - 4
+  - 4
+  num_res_blocks: 2
+  attention_resolutions:
+  - 16
+  - 32
+  num_heads: 4
+  num_head_channels: -1
+  num_heads_upsample: -1
+  use_scale_shift_norm: true
+  conv_resample: true
+  resblock_updown: false
+  dropout: 0.0
+  use_checkpoint: false
+  use_fp16: false
+  decoder_skip: add
+  skip_scale: 0.5
+objective:
+  name: ddpm_eps
+  num_steps: 1000
+  schedule: linear
+  beta_start: 0.0001
+  beta_end: 0.02
+training:
+  precision: bf16
+  seed: 0
+  batch_per_gpu: 1
+  max_steps: 1000000
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  grad_clip: 1.0
+  ema_decay: 0.9999
+  workers_per_rank: 2
+  log_every: 100
+  checkpoint_every: 1000
+  sample_every: 5000
+  sample_steps: 50
+  sampling_method: heun
+  sample_seed: 91415
+  required_gpus: null
+  preview_reserve_seconds: 600
+validation:
+  fraction: 0.1
+  seed: 91415
+  every_steps: 5000
+  max_volumes: 4
+  noise_draws: 2
+experiment:
+  name: ct_liif_ddpm
+  head: liif
