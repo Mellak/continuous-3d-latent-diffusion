@@ -81,18 +81,18 @@ weights/
 
 If you keep the model folders elsewhere, set `C3D_WEIGHTS` to their parent directory before running the commands. Autoencoder weights are 6–19 MB each; prior weights are about 331 MB each and exceed GitHub's 100 MB file limit.
 
-| Id | Model | Data | Paper |
-|---|---|---|---|
-| `core-ae-liif-ct512` | CoRe-AE, LIIF head | CT 512³ | Table 1: 42.32 dB / 0.9835 |
-| `core-ae-clif-ct512` | CoRe-AE, CLIF head | CT 512³ | Table 1: 40.11 dB / 0.9781 |
-| `core-ae-liif-mri256` | CoRe-AE, LIIF head | MRI 256³ | Table 1: 33.77 dB / 0.9615 |
-| `core-ae-clif-mri256` | CoRe-AE, CLIF head | MRI 256³ | Table 1: 31.88 dB / 0.9373 |
-| `core-ldm-jit-ct512-liif` | JiT prior on `core-ae-liif-ct512` latents | CT | Table 3: FID 2.522 |
-| `core-ldm-jit-ct512-clif` | JiT prior on `core-ae-clif-ct512` latents | CT | Table 3: FID 2.689 |
-| `core-ldm-jit-mri256-liif` | JiT prior on `core-ae-liif-mri256` latents | MRI | Table 3 (indicative) |
-| `core-ldm-jit-mri256-clif` | JiT prior on `core-ae-clif-mri256` latents | MRI | Table 3 (indicative) |
-| `core-ldm-ddpm-ct512-liif` | DDPM-ε prior (example) | CT | – |
-| `core-ldm-ddpm-ct512-clif` | DDPM-ε prior (example) | CT | – |
+| Id | Model | Data |
+|---|---|---|
+| `core-ae-liif-ct512` | CoRe-AE, LIIF head | CT 512³ |
+| `core-ae-clif-ct512` | CoRe-AE, CLIF head | CT 512³ |
+| `core-ae-liif-mri256` | CoRe-AE, LIIF head | MRI 256³ |
+| `core-ae-clif-mri256` | CoRe-AE, CLIF head | MRI 256³ |
+| `core-ldm-jit-ct512-liif` | JiT prior on `core-ae-liif-ct512` latents | CT |
+| `core-ldm-jit-ct512-clif` | JiT prior on `core-ae-clif-ct512` latents | CT |
+| `core-ldm-jit-mri256-liif` | JiT prior on `core-ae-liif-mri256` latents | MRI |
+| `core-ldm-jit-mri256-clif` | JiT prior on `core-ae-clif-mri256` latents | MRI |
+| `core-ldm-ddpm-ct512-liif` | DDPM-ε prior (example) | CT |
+| `core-ldm-ddpm-ct512-clif` | DDPM-ε prior (example) | CT |
 
 Latent grids: 4 × 128³ (CT) and 4 × 64³ (MRI). Prior weights are the EMA weights. Each prior folder records its autoencoder and the latent normalisation (`latent_stats.json`).
 
