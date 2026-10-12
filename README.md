@@ -122,8 +122,6 @@ Change any setting without editing the file: `--set training.lr=1e-4 --set train
 Notes:
 - The configs are the saved configs of the released weights. Only the data path, the initial checkpoint and the GPU count are left open.
 - LIIF is trained with L1 + KL on 200 000 random coordinates per iteration. CLIF is trained on 64³ tiles with L1 + KL plus perceptual and adaptive adversarial terms (`training.losses` in its config). The perceptual loss needs `monai-generative`.
-- The released autoencoders were fine-tuned from an earlier LIIF backbone, which is not released. `--mode scratch` (the default in the configs) trains from new weights.
-- The released priors were trained on 2 × 48 GB GPUs with BF16.
 
 ## Repository
 
